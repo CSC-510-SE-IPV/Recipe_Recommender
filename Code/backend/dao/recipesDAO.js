@@ -3,6 +3,8 @@ import nodemailer from "nodemailer";
 import password from "./mail_param.js";
 const pass = password.password;
 const GMAIL = process.env.GMAIL;
+import HashAndVerify from "../helpers/auth.js";
+import bcrypt from "bcrypt"
 
 const ObjectId = mongodb.ObjectId;
 let recipes;
@@ -45,16 +47,22 @@ export default class RecipesDAO {
 
     const user = await users.findOne({ userName: filters.userName });
 
-    if (!user) {
-      // User does not exist
-      return { success: false, message: "User does not exist" };
-    } else if (user.password !== filters.password) {
+    if (user) {
+      const isPasswordValid = await bcrypt.compare(filters.password, user.password);
+     
+    if (isPasswordValid) {
+      return { success: true, user };
       // Password is incorrect
-      return { success: false, message: "Incorrect password" };
+      }
+    else{  return { success: false, message: "Incorrect password" };}
+    
+  }
+    else{
+       // User does not exist
+       return { success: false, message: "User does not exist" };
     }
 
     // Successful login
-    return { success: true, user };
   }
 
   /* Function to add a new user into the database
@@ -70,10 +78,13 @@ export default class RecipesDAO {
     let user;
     query = { userName: data.userName };
     if (data) {
+      
+
       cursor = await users.findOne(query);
       if (cursor !== null || !data.password) {
         return { success: false };
       } else {
+        
         const res = await users.insertOne(data);
         return { success: true };
       }

@@ -1,6 +1,8 @@
 import express from "express";
 import RecipesCtrl from "./recipes.controller.js";
 import RecipesDAO from "../dao/recipesDAO.js";
+// import cors from "cors";
+
 
 const router = express.Router();
 //URl to get the recipes

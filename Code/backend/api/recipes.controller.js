@@ -1,4 +1,6 @@
 import RecipesDAO from "../dao/recipesDAO.js";
+import HashAndVerify from "../helpers/auth.js";
+import bcrypt from "bcrypt"
 
 export default class RecipesController {
   /* API handler for logging in a user
@@ -6,6 +8,7 @@ export default class RecipesController {
       If the provided userName-password pair matches the database information, the user is successfully logged in
   */
   static async apiAuthLogin(req, res) {
+    
     const filters = {
       userName: req.query.userName,
       password: req.query.password,
@@ -26,9 +29,17 @@ export default class RecipesController {
   */
   static async apiAuthSignup(req, res) {
     if (req.body) {
-      let data = {};
-      data.userName = req.body.userName;
-      data.password = req.body.password;
+    
+      const hashedPassword = await bcrypt.hash(req.body.password, 10); // Hash password
+      // const hashedPassword = HashAndVerify.hashPassword(req.body.password)
+        let data = {
+          userName: req.body.userName,
+          password: hashedPassword,
+        };
+      // const hashedPass = HashAndVerify.hashPassword(req.body.password)
+      // console.log(req.body.password)
+      // data.userName = req.body.userName;
+      // data.password = req.body.password;
       const { success, user } = await RecipesDAO.addUser({
         data,
       });
