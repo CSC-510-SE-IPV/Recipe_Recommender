@@ -101,7 +101,14 @@ const Login = (props) => {
           isClosable: true,
         });
       }
-    } catch (error) {}
+    } catch (error) {
+      toast({
+        title: isLoginMode ? "Login successful" : "Signup successful",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
   const toggleMode = () => {

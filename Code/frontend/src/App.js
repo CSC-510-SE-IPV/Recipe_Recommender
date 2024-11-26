@@ -15,6 +15,8 @@ import {
   Button,
   Flex,
 } from "@chakra-ui/react";
+import { Input, List, ListItem, Text, Stack, IconButton, useToast } from "@chakra-ui/react";
+import { MdDelete } from "react-icons/md"; // Importing an icon for remove button
 import RecipeLoading from "./components/RecipeLoading.js";
 import Nav from "./components/Navbar.js";
 import SearchByRecipe from "./components/SearchByRecipe.js";
@@ -45,12 +47,28 @@ class App extends Component {
       isLoggedIn: false,
       isProfileView: false,
       isMealPlanView: false,
+      newGroceryItem: "",
+      groceryList: [],
       isChatOpen: false,
       userData: {
         bookmarks: [], // List of user bookmarks
       },
     };
   }
+  handleAddToGroceryList = (item) => {
+    if (item) {
+      this.setState((prevState) => ({
+        groceryList: [...prevState.groceryList, item],
+        newGroceryItem: "", // Clear input field after adding
+      }));
+    }
+  };
+
+  handleRemoveFromGroceryList = (item) => {
+    this.setState((prevState) => ({
+      groceryList: prevState.groceryList.filter((groceryItem) => groceryItem !== item),
+    }));
+  };
 
   handleToggleChat = () => {
     this.setState((prevState) => ({
@@ -322,6 +340,7 @@ class App extends Component {
                   <Tab>Add Recipe</Tab>
                   <Tab>Search Recipe By Name</Tab>
                   <Tab>Recipe Bot</Tab>
+                  <Tab>Grocery List</Tab>
                 </TabList>
                 <TabPanels>
                   <TabPanel>
@@ -374,6 +393,65 @@ class App extends Component {
                         : "Start a new chat"}
                     </Button>
                     {this.state.isChatOpen && <ChatStream />}
+                  </TabPanel>
+                  <TabPanel>
+                  <Box p={8} bg="gray.50" borderRadius="xl" boxShadow="lg" maxWidth="500px" mx="auto">
+        <Text fontSize="3xl" fontWeight="bold" mb={6} textAlign="center" color="teal.600">
+          Grocery List
+        </Text>
+
+        {/* Input field to add new items */}
+        <Flex direction="column" mb={6}>
+          <Input
+            value={this.state.newGroceryItem}
+            onChange={(e) => this.setState({ newGroceryItem: e.target.value })}
+            placeholder="Add an item to the grocery list"
+            size="lg"
+            borderColor="teal.300"
+            focusBorderColor="teal.500"
+            mb={4}
+          />
+          <Button
+            colorScheme="teal"
+            size="lg"
+            onClick={() => this.handleAddToGroceryList(this.state.newGroceryItem)}
+            isDisabled={!this.state.newGroceryItem.trim()}
+          >
+            Add to List
+          </Button>
+        </Flex>
+
+        {/* Grocery list */}
+        <List spacing={4}>
+          {this.state.groceryList.map((item, index) => (
+            <ListItem
+              key={index}
+              p={4}
+              borderWidth="1px"
+              borderRadius="md"
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              bg="white"
+              boxShadow="sm"
+              _hover={{ bg: "teal.50", cursor: "pointer" }}
+            >
+              <Text fontSize="lg" fontWeight="semibold" color="gray.700">
+                {item}
+              </Text>
+              <IconButton
+                aria-label="Remove from grocery list"
+                icon={<MdDelete />}
+                colorScheme="red"
+                size="sm"
+                onClick={() => this.handleRemoveFromGroceryList(item)}
+                variant="outline"
+                _hover={{ bg: "red.100" }}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Box>
                   </TabPanel>
                 </TabPanels>
               </Tabs>
