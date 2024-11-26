@@ -39,21 +39,21 @@ jobs:
           echo PORT=${{ secrets.API_PORT }} >> .env
           echo GMAIL=${{ secrets.GMAIL }} >> .env
           npm install
-      continue-on-error: true  # Continue even if dependencies fail to install
+      continue-on-error: true  
 
     - name: Run backend tests with coverage
       run: |
           cd Code/backend
           npm test -- --coverage
-      continue-on-error: true  # Continue even if tests fail
+      continue-on-error: true  
 
     - name: Verify coverage report
       run: ls -la Code/backend/coverage
-      continue-on-error: true  # Continue even if coverage report verification fails
+      continue-on-error: true  
 
     - name: Upload results to Codecov
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: Code/backend/coverage/lcov.info
-      continue-on-error: true  # Continue even if upload fails
+      continue-on-error: true 
