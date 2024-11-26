@@ -279,22 +279,33 @@ const RecipeList = ({ refresh, searchName }) => {
             </Flex>
           </ModalBody>
           <ModalFooter>
-            <RateRecipe recipe={currentRecipe} setChange={setIsChange} />
-            {isEditing ? (
-              <>
-                <Button colorScheme="teal" mr={3} onClick={handleSaveEdit}>
-                  Save
-                </Button>
-                <Button onClick={handleEditToggle}>Cancel</Button>
-              </>
-            ) : (
-              <Button colorScheme="yellow" mr={3} onClick={handleEditToggle}>
-                Edit Recipe
-              </Button>
-            )}
-            <Button colorScheme="teal" mr={3} onClick={onClose}>
-              Close
-            </Button>
+          <RateRecipe recipe={currentRecipe} setChange={setIsChange} />
+  {isEditing ? (
+    <>
+      <Button colorScheme="teal" mr={3} onClick={handleSaveEdit}>
+        Save
+      </Button>
+      <Button onClick={handleEditToggle}>Cancel</Button>
+    </>
+  ) : (
+    <Button colorScheme="yellow" mr={3} onClick={handleEditToggle}>
+      Edit Recipe
+    </Button>
+  )}
+  <Button
+    colorScheme="blue"
+    mr={3}
+    onClick={() =>
+      navigator.clipboard.writeText(
+        `${window.location.origin}/recipe/${currentRecipe._id}`
+      )
+    }
+  >
+    Share Recipe
+  </Button>
+  <Button colorScheme="teal" mr={3} onClick={onClose}>
+    Close
+  </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

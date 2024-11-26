@@ -153,6 +153,16 @@ export default class RecipesDAO {
     }
   }
 
+  static async getRecipeById(id) {
+    try {
+      const recipe = await recipes.findOne({ _id: new ObjectId(id) });
+      return recipe;
+    } catch (e) {
+      console.error(`Unable to fetch recipe: ${e}`);
+      throw e;
+    }
+  }
+
   // Update an existing recipe
   static async updateRecipe(id, updateData) {
 
