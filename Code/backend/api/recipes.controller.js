@@ -246,6 +246,8 @@ export default class RecipesController {
   */
   static async apiUpdateRecipe(req, res, next) {
     try {
+      console.log("Received Recipe ID:", req.params.id);
+      console.log("Received Update Data:", req.body);
       const recipeId = req.params.id; // Get the recipe ID from the request params
       const updateData = req.body; // Get the updated recipe data from the request body
 
