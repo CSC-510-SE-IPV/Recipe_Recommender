@@ -33,7 +33,7 @@
  * <RecipeList recipes={recipes} refresh={fetchRecipes} searchName={searchTerm} />
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Avatar,
   Flex,
@@ -54,13 +54,29 @@ import {
 import RecipeCard from "./RecipeCard";
 import Rating from "./Rating";
 import RateRecipe from "./RateRecipe";
-import recipeDB from "../apis/recipeDB"; // Assuming recipeDB is set up for API calls
+import recipeDB from "../apis/recipeDB"; // API configuration
 
-const RecipeList = ({ recipes, refresh, searchName }) => {
+const RecipeList = ({ refresh, searchName }) => {
+  const [recipes, setRecipes] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [currentRecipe, setCurrentRecipe] = useState({});
   const [isChange, setIsChange] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    fetchRecipes();
+  }, [searchName]);
+
+  const fetchRecipes = () => {
+    recipeDB
+      .get("/recipes")
+      .then((response) => {
+        setRecipes(response.data.recipes); // Adjust based on API response structure
+      })
+      .catch((err) => {
+        console.error("Error fetching recipes:", err);
+      });
+  };
 
   const youtube_videos =
     "https://www.youtube.com/results?search_query=how+to+make+" +
@@ -85,43 +101,52 @@ const RecipeList = ({ recipes, refresh, searchName }) => {
   };
 
   const handleSaveEdit = () => {
+    if (!currentRecipe.TranslatedRecipeName) {
+      alert("Recipe name cannot be empty!");
+      return;
+    }
+
     recipeDB
-      .put(`/recipes/${currentRecipe._id}`, currentRecipe)
+      .put(`/updateRecipe/${currentRecipe._id}`, currentRecipe)
       .then(() => {
         setIsChange(true);
         setIsEditing(false);
-        // refresh(searchName); // Reload updated recipes
+        alert("Recipe updated successfully!");
+        refresh(searchName); // Reload updated recipes
       })
-      .catch((err) => console.error("Error saving recipe:", err));
+      .catch((err) => {
+        console.error("Error saving recipe:", err);
+        alert("Failed to update recipe. Please try again.");
+      });
   };
 
   const onClose = () => {
     setIsOpen(false);
     setCurrentRecipe({});
-    // if (isChange) {
-    //   refresh(searchName);
-    // }
+    if (isChange) {
+      refresh(searchName); // Refresh list if changes are made
+    }
   };
 
   return (
     <>
       <Box
         borderRadius={"lg"}
-        border='1px'
-        boxShadow='lg'
-        borderColor='gray.200'
-        fontFamily='sans-serif'
+        border="1px"
+        boxShadow="lg"
+        borderColor="gray.200"
+        fontFamily="sans-serif"
         m={10}
         width={"80%"}
         p={5}
-        bg='white'
+        bg="white"
       >
-        <Text fontSize='2xl' fontWeight='bold' mb={5} textAlign='center'>
+        <Text fontSize="2xl" fontWeight="bold" mb={5} textAlign="center">
           Recipe Collection
         </Text>
         <SimpleGrid
           spacing={5}
-          templateColumns='repeat(auto-fill, minmax(250px, 1fr))'
+          templateColumns="repeat(auto-fill, minmax(250px, 1fr))"
         >
           {recipes.length !== 0 ? (
             recipes.map((recipe) => (
@@ -132,7 +157,7 @@ const RecipeList = ({ recipes, refresh, searchName }) => {
               />
             ))
           ) : (
-            <Text data-testid='noResponseText' fontSize={"lg"} color={"gray"}>
+            <Text data-testid="noResponseText" fontSize={"lg"} color={"gray"}>
               Searching for a recipe?
             </Text>
           )}
@@ -141,8 +166,8 @@ const RecipeList = ({ recipes, refresh, searchName }) => {
 
       <Modal size={"6xl"} isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
-        <ModalContent data-testid='recipeModal'>
-          <ModalHeader fontSize='xl' fontWeight='bold'>
+        <ModalContent data-testid="recipeModal">
+          <ModalHeader fontSize="xl" fontWeight="bold">
             {isEditing ? (
               <Input
                 value={currentRecipe.TranslatedRecipeName || ""}
@@ -156,15 +181,15 @@ const RecipeList = ({ recipes, refresh, searchName }) => {
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Flex align='flex-start' mb={4}>
+            <Flex align="flex-start" mb={4}>
               <Avatar
-                size='2xl'
+                size="2xl"
                 mr={4}
                 src={currentRecipe["image-url"]}
-                borderRadius='md'
+                borderRadius="md"
               />
-              <Box flex='1'>
-                <Text fontSize='lg' fontWeight='bold' mb={1}>
+              <Box flex="1">
+                <Text fontSize="lg" fontWeight="bold" mb={1}>
                   Cooking Time:{" "}
                   {isEditing ? (
                     <Input
@@ -177,8 +202,8 @@ const RecipeList = ({ recipes, refresh, searchName }) => {
                     `${currentRecipe.TotalTimeInMins} mins`
                   )}
                 </Text>
-                <Flex align='center' mb={2}>
-                  <Text fontWeight='bold' mr={2}>
+                <Flex align="center" mb={2}>
+                  <Text fontWeight="bold" mr={2}>
                     Rating:
                   </Text>
                   <Rating rating={currentRecipe["Recipe-rating"]} />
@@ -241,11 +266,11 @@ const RecipeList = ({ recipes, refresh, searchName }) => {
                     currentRecipe["TranslatedInstructions"]
                   )}
                 </Text>
-                <Text color='blue.500'>
+                <Text color="blue.500">
                   <a
                     href={youtube_videos}
-                    target='_blank'
-                    rel='noopener noreferrer'
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     Watch on YouTube for more recipes
                   </a>
@@ -257,17 +282,17 @@ const RecipeList = ({ recipes, refresh, searchName }) => {
             <RateRecipe recipe={currentRecipe} setChange={setIsChange} />
             {isEditing ? (
               <>
-                <Button colorScheme='teal' mr={3} onClick={handleSaveEdit}>
+                <Button colorScheme="teal" mr={3} onClick={handleSaveEdit}>
                   Save
                 </Button>
                 <Button onClick={handleEditToggle}>Cancel</Button>
               </>
             ) : (
-              <Button colorScheme='yellow' mr={3} onClick={handleEditToggle}>
+              <Button colorScheme="yellow" mr={3} onClick={handleEditToggle}>
                 Edit Recipe
               </Button>
             )}
-            <Button colorScheme='teal' mr={3} onClick={onClose}>
+            <Button colorScheme="teal" mr={3} onClick={onClose}>
               Close
             </Button>
           </ModalFooter>
