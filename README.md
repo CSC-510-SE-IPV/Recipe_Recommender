@@ -9,7 +9,7 @@
 <br><br>
 
 [![Made With](https://img.shields.io/badge/made%20with-javascript-gree)](https://www.javascript.com/)
-[![DOI](https://zenodo.org/badge/870831240.svg)](https://doi.org/10.5281/zenodo.14027504)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14226076.svg)](https://doi.org/10.5281/zenodo.14226076)
 [![GitHub issues open](https://img.shields.io/github/issues/SE-Fall24-RZA/Recipe_Recommender)](https://github.com/SE-Fall24-RZA/Recipe_Recommender/issues)
 [![GitHub stars](https://badgen.net/github/stars/SE-Fall24-RZA/Recipe_Recommender)](https://badgen.net/github/stars/SE-Fall24-RZA/Recipe_Recommender)
 ![Github closes issues](https://img.shields.io/github/issues-closed-raw/SE-Fall24-RZA/Recipe_Recommender)
@@ -255,8 +255,8 @@ Check out our comprehensive YouTube video demonstrating each step for easy guida
 ## Release Made in this cycle <br>
 
 Release Notes
-  - New community rating system for recipes
-  - Enhanced UI
+  - Add Groceries List Feature
+  - Included Hashing Of Passwords
   - Meal Plan page allowing users to plan out meals for each day of the week
   - Improved Bookmarks system
   - Ollama chatbot integration
@@ -286,9 +286,9 @@ Please see our [CONTRIBUTING.md](https://github.com/SE-Fall24-RZA/Recipe_Recomme
 4. Security Enhancements : Incorporate encryption and hashing into the login functionality.  Passwords should be stored as salted and hashed, not as raw text.  Implement JSON Web Tokens to securely login users and keep track of who is logged in.  This will ensure the safety of any sensitive user data
 
 ## Team Members
-Robert Thomas - rtthoma3@ncsu.edu <br>
-Anuraag Jajoo - ajajoo3@ncsu.edu <br>
-Zayaan Husain Siddiqui - Zsiddiq@ncsu.edu <br>
+Ishani Rajput - irajput@ncsu.edu <br>
+Poorna Subramanian - psubra3@ncsu.edu <br>
+Vaishnav Puram - vpuram@ncsu.edu <br>
 
 ## Troubleshooting and Support
 
