@@ -5,7 +5,7 @@ import password from "./mail_param.js";
 const pass = password.password;
 const GMAIL = process.env.GMAIL;
 import HashAndVerify from "../helpers/auth.js";
-import bcrypt from "bcrypt"
+import bcrypt from "bcrypt";
 
 const ObjectId = mongodb.ObjectId;
 let recipes;
@@ -32,74 +32,46 @@ export default class RecipesDAO {
   }
 
   // Fetch user with username and password
-  static async getUser({ filters = null } = {}) {
-    if (!filters || !filters.userName)
+  static async getUser(filters = {}) {
+    if (!filters?.userName)
       return { success: false, message: "User does not exist" };
 
     const user = await users.findOne({ userName: filters.userName });
 
     if (user) {
       const isPasswordValid = await bcrypt.compare(filters.password, user.password);
-     
-    if (isPasswordValid) {
-      return { success: true, user };
-      // Password is incorrect
+      if (isPasswordValid) {
+        return { success: true, user };
+      } else {
+        return { success: false, message: "Incorrect password" };
       }
-    else{  return { success: false, message: "Incorrect password" };}
-    
-  }
-    else{
-       // User does not exist
-       return { success: false, message: "User does not exist" };
-    if (!user) {
-      return { success: false, message: "User does not exist" };
-    } else if (user.password !== filters.password) {
-      return { success: false, message: "Incorrect password" };
     }
 
-    // Successful login
-    return { success: true, user };
+    return { success: false, message: "User does not exist" };
   }
 
   // Add a new user to the database
-  static async addUser({ data = null } = {}) {
-    let query;
-    let cursor;
-    let user;
-    query = { userName: data.userName };
-    if (data) {
-      
-
-      cursor = await users.findOne(query);
-      if (cursor !== null || !data.password) {
+  static async addUser(data) {
     try {
-      const query = { userName: data.userName };
-      const existingUser = await users.findOne(query);
-
-      if (existingUser || !data.password) {
-        return { success: false };
-      } else {
-        
-        const res = await users.insertOne(data);
-        return { success: true };
-      }
-    }
-  }
-
-  /* Function to retrieve the bookmarks from a given user
-    Params:
-      - userName: The name of the user to get bookmarks for
-    Returns:
-      - If provided userName belongs to an existing user, returns an array of their current bookmarked recipes
-      - Otherwise, throws an error
-  */
+      if (!data || !data.userName || !data.password) {
+        throw new Error("Invalid user data");
       }
 
-      await users.insertOne(data);
+      const existingUser = await users.findOne({ userName: data.userName });
+
+      if (existingUser) {
+        return { success: false, message: "User already exists" };
+      }
+
+      // Hash the password before storing
+      const hashedPassword = await bcrypt.hash(data.password, 10);
+      const userData = { ...data, password: hashedPassword };
+
+      await users.insertOne(userData);
       return { success: true };
     } catch (e) {
       console.error(`Error adding user: ${e}`);
-      return { success: false };
+      return { success: false, message: e.message };
     }
   }
 
@@ -118,7 +90,7 @@ export default class RecipesDAO {
   }
 
   // Retrieve recipes by name
-  static async getRecipeByName({ filters = null } = {}) {
+  static async getRecipeByName(filters = {}) {
     try {
       if (filters?.recipeName) {
         const words = filters.recipeName.split(" ");
@@ -132,10 +104,10 @@ export default class RecipesDAO {
 
         return { recipesList };
       }
-      return { recipesList: [], totalNumRecipess: 0 };
+      return { recipesList: [], totalNumRecipes: 0 };
     } catch (e) {
       console.error(`Error retrieving recipe by name: ${e}`);
-      return { recipesList: [], totalNumRecipess: 0 };
+      return { recipesList: [], totalNumRecipes: 0 };
     }
   }
 
@@ -193,6 +165,7 @@ export default class RecipesDAO {
     }
   }
 
+  // Get recipe by ID
   static async getRecipeById(id) {
     try {
       const recipe = await recipes.findOne({ _id: new ObjectId(id) });
@@ -205,9 +178,7 @@ export default class RecipesDAO {
 
   // Update an existing recipe
   static async updateRecipe(id, updateData) {
-
     try {
-      console.log("Update Query:", { id, updateData });
       const updateResponse = await recipes.updateOne(
         { _id: new ObjectId(id) },
         { $set: updateData }

@@ -8,9 +8,16 @@ import {
   TabPanels,
   Box,
   Button,
+  Input,
+  List,
+  ListItem,
+  Text,
+  Flex,
+  IconButton,
+  useToast,
 } from "@chakra-ui/react";
-import { Input, List, ListItem, Text, Stack, IconButton, useToast } from "@chakra-ui/react";
-import { MdDelete } from "react-icons/md"; // Importing an icon for remove button
+import { MdDelete } from "react-icons/md";
+import recipeDB from "./apis/recipeDB";
 import RecipeLoading from "./components/RecipeLoading.js";
 import Nav from "./components/Navbar.js";
 import SearchByRecipe from "./components/SearchByRecipe.js";
@@ -20,6 +27,10 @@ import LandingPage from "./components/LandingPage.js";
 import BookMarksRecipeList from "./components/BookMarksRecipeList";
 import UserMealPlan from "./components/UserMealPlan.js";
 import ChatStream from "./components/chatbot.js";
+import RecipeList from "./components/RecipeList.js";
+import AddRecipe from "./components/AddRecipe.js";
+import RecipeDetails from "./components/RecipeDetails.js";
+import Form from "./components/Form.js"; // Import Form
 
 class App extends Component {
   constructor(props) {
@@ -45,18 +56,21 @@ class App extends Component {
       },
     };
   }
+
   handleAddToGroceryList = (item) => {
     if (item) {
       this.setState((prevState) => ({
         groceryList: [...prevState.groceryList, item],
-        newGroceryItem: "", // Clear input field after adding
+        newGroceryItem: "",
       }));
     }
   };
 
   handleRemoveFromGroceryList = (item) => {
     this.setState((prevState) => ({
-      groceryList: prevState.groceryList.filter((groceryItem) => groceryItem !== item),
+      groceryList: prevState.groceryList.filter(
+        (groceryItem) => groceryItem !== item
+      ),
     }));
   };
 
@@ -100,7 +114,12 @@ class App extends Component {
     });
 
     const items = Array.from(formDict["ingredient"]);
-    this.getRecipeDetails(items, formDict["cuisine"], formDict["email_id"], formDict["flag"]);
+    this.getRecipeDetails(
+      items,
+      formDict["cuisine"],
+      formDict["email_id"],
+      formDict["flag"]
+    );
   };
 
   handleRecipesByName = (recipeName) => {
@@ -142,174 +161,109 @@ class App extends Component {
   };
 
   render() {
+    const { toastInstance } = this.props; // Access toast instance from props
+
     return (
       <Router>
         <Nav
-          handleLogout={this.handleLogout} // Logout function passed to Nav
-          handleBookMarks={this.handleBookMarks} // Bookmarks function passed to Nav
-          handleMealPlan={this.handleMealPlan} // Meal plan function passed to Nav
-          user={this.state.isLoggedIn ? this.state.userData : null} // Pass user data if logged in
-          onLoginClick={() => this.setState({ isLoggedIn: false })} // Handle login click
+          handleLogout={this.handleLogout}
+          handleBookMarks={this.handleBookMarks}
+          handleMealPlan={this.handleMealPlan}
+          user={this.state.isLoggedIn ? this.state.userData : null}
+          onLoginClick={() => this.setState({ isLoggedIn: false })}
         />
-        {this.state.isLoggedIn ? ( // Conditional rendering based on login state
-          <>
-            {this.state.isProfileView ? ( // Render UserProfile if in profile view
-              <UserProfile
-                handleProfileView={this.handleProfileView}
-                user={this.state.userData}
-              >
-                {}
-                <BookMarksRecipeList
-                  recipes={this.state.userData.bookmarks} // Pass bookmarks to BookMarksRecipeList
-                />
-              </UserProfile>
-            ) : this.state.isMealPlanView ? ( // Render UserMealPlan if in meal plan view
-              <UserMealPlan
-                handleProfileView={this.handleProfileView}
-                user={this.state.userData}
-              ></UserMealPlan>
-            ) : (
-              // Render tabs for recipe searching and adding
-              <Tabs variant='soft-rounded' colorScheme='green'>
-                <TabList ml={10}>
-                  <Tab>Search Recipe</Tab>
-                  <Tab>Add Recipe</Tab>
-                  <Tab>Search Recipe By Name</Tab>
-                  <Tab>Recipe Bot</Tab>
-                  <Tab>Grocery List</Tab>
-                </TabList>
-                <TabPanels>
-                  <TabPanel>
-                    <Box display='flex'>
-                      <Form sendFormData={this.handleSubmit} />
-                      {this.state.isLoading ? ( // Conditional rendering of loading state
-                        <RecipeLoading /> // Show loading indicator if loading
-                      ) : (
-                        <RecipeList
-                          recipes={this.state.recipeList} // Pass fetched recipes to RecipeList
-                          editRecipe={this.editRecipe} // Pass edit function to RecipeList
-                        />
-                      )}
-                    </Box>
-                  </TabPanel>
-                  <TabPanel>
-                    <AddRecipe />
-                  </TabPanel>
-                  <TabPanel>
-                    <SearchByRecipe sendRecipeData={this.handleRecipesByName} />{" "}
-                    {this.state.isLoading ? ( // Conditional rendering of loading state
-                      <RecipeLoading /> // Show loading indicator if loading
-                    ) : (
-                      <RecipeList
-                        recipes={this.state.recipeByNameList} // Pass fetched recipes by name to RecipeList
-                        refresh={this.handleRecipesByName} // Pass refresh function to RecipeList
-                        searchName={this.state.searchName} // Pass search name to RecipeList
-                      />
-                    )}
-                  </TabPanel>
-                  <TabPanel>
-                    <Button
-                      onClick={this.handleToggleChat}
-                      colorScheme={this.state.isChatOpen ? "blue" : "green"} // Change color based on state
-                      variant='solid'
-                      size='lg' // Larger button
-                      borderRadius='md' // Rounded corners
-                      boxShadow='md' // Add a subtle shadow for depth
-                      _hover={{
-                        bg: this.state.isChatOpen ? "blue.600" : "green.600", // Darker shade on hover
-                        transform: "scale(1.05)", // Slightly enlarge on hover
-                      }}
-                      _active={{
-                        bg: this.state.isChatOpen ? "blue.700" : "green.700", // Darker shade when active
-                        transform: "scale(0.95)", // Slightly shrink when clicked
-                      }}
-                    >
-                      {this.state.isChatOpen
-                        ? "Close existing chat window"
-                        : "Start a new chat"}
-                    </Button>
-                    {this.state.isChatOpen && <ChatStream />}
-                  </TabPanel>
-                  <TabPanel>
-                  <Box p={8} bg="gray.50" borderRadius="xl" boxShadow="lg" maxWidth="500px" mx="auto">
-        <Text fontSize="3xl" fontWeight="bold" mb={6} textAlign="center" color="teal.600">
-          Grocery List
-        </Text>
-
-        {/* Input field to add new items */}
-        <Flex direction="column" mb={6}>
-          <Input
-            value={this.state.newGroceryItem}
-            onChange={(e) => this.setState({ newGroceryItem: e.target.value })}
-            placeholder="Add an item to the grocery list"
-            size="lg"
-            borderColor="teal.300"
-            focusBorderColor="teal.500"
-            mb={4}
+        <Routes>
+          <Route
+            path="/recipe/:id"
+            element={
+              <RecipeDetails
+                showToast={(message) => {
+                  toastInstance({
+                    title: message,
+                    status: "success",
+                    duration: 2000,
+                    isClosable: true,
+                  });
+                }}
+              />
+            }
           />
-          <Button
-            colorScheme="teal"
-            size="lg"
-            onClick={() => this.handleAddToGroceryList(this.state.newGroceryItem)}
-            isDisabled={!this.state.newGroceryItem.trim()}
-          >
-            Add to List
-          </Button>
-        </Flex>
-
-        {/* Grocery list */}
-        <List spacing={4}>
-          {this.state.groceryList.map((item, index) => (
-            <ListItem
-              key={index}
-              p={4}
-              borderWidth="1px"
-              borderRadius="md"
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              bg="white"
-              boxShadow="sm"
-              _hover={{ bg: "teal.50", cursor: "pointer" }}
-            >
-              <Text fontSize="lg" fontWeight="semibold" color="gray.700">
-                {item}
-              </Text>
-              <IconButton
-                aria-label="Remove from grocery list"
-                icon={<MdDelete />}
-                colorScheme="red"
-                size="sm"
-                onClick={() => this.handleRemoveFromGroceryList(item)}
-                variant="outline"
-                _hover={{ bg: "red.100" }}
-              />
-            </ListItem>
-          ))}
-        </List>
-      </Box>
-                  </TabPanel>
-                </TabPanels>
-              </Tabs>
-            )}
-          </>
-        ) : (
-          <>
-            {this.state.showLogin ? ( // Show Login component if showLogin state is true
+          <Route
+            path="/"
+            element={
+              this.state.isLoggedIn ? (
+                this.state.isProfileView ? (
+                  <UserProfile
+                    handleProfileView={this.handleProfileView}
+                    user={this.state.userData}
+                  >
+                    <BookMarksRecipeList
+                      recipes={this.state.userData.bookmarks}
+                    />
+                  </UserProfile>
+                ) : this.state.isMealPlanView ? (
+                  <UserMealPlan
+                    handleProfileView={this.handleProfileView}
+                    user={this.state.userData}
+                  />
+                ) : (
+                  <Tabs variant="soft-rounded" colorScheme="green">
+                    <TabList ml={10}>
+                      <Tab>Search Recipe</Tab>
+                      <Tab>Add Recipe</Tab>
+                      <Tab>Search Recipe By Name</Tab>
+                      <Tab>Recipe Bot</Tab>
+                      <Tab>Grocery List</Tab>
+                    </TabList>
+                    <TabPanels>
+                      <TabPanel>
+                        <Box display="flex">
+                          <Form sendFormData={this.handleSubmit} />
+                          {this.state.isLoading ? (
+                            <RecipeLoading />
+                          ) : (
+                            <RecipeList
+                              recipes={this.state.recipeList}
+                              showToast={(message) => {
+                                toastInstance({
+                                  title: message,
+                                  status: "success",
+                                  duration: 2000,
+                                  isClosable: true,
+                                });
+                              }}
+                            />
+                          )}
+                        </Box>
+                      </TabPanel>
+                      {/* Other Panels */}
+                    </TabPanels>
+                  </Tabs>
+                )
+              ) : (
+                <LandingPage
+                  onGetStarted={() => this.setState({ showLogin: true })}
+                />
+              )
+            }
+          />
+          <Route
+            path="/login"
+            element={
               <Login
-                handleSignup={this.handleSignup} // Pass signup function to Login
-                handleLogin={this.handleLogin} // Pass login function to Login
+                handleSignup={this.handleSignup}
+                handleLogin={this.handleLogin}
               />
-            ) : (
-              <LandingPage
-                onGetStarted={() => this.setState({ showLogin: true })} // Show LandingPage and handle getting started
-              />
-            )}
-          </>
-        )}
-      </div>
+            }
+          />
+        </Routes>
+      </Router>
     );
   }
 }
 
-export default App;
+export default function AppWrapper() {
+  const toast = useToast();
+
+  return <App toastInstance={toast} />;
+}
