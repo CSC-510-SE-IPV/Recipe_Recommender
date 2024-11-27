@@ -252,6 +252,22 @@ export default class RecipesController {
     }
   }
 
+  static async apiGetRecipeById(req, res, next) {
+    try {
+      const recipeId = req.params.id;
+  
+      const recipe = await RecipesDAO.getRecipeById(recipeId);
+      if (!recipe) {
+        return res.status(404).json({ error: "Recipe not found" });
+      }
+  
+      res.json(recipe);
+    } catch (error) {
+      console.error(`Error fetching recipe by ID: ${error.message}`);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
   /* API handler for updating a recipe.
       Attempts to update a specified recipe with the update data in req.body.
   */

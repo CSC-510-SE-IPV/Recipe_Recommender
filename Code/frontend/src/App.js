@@ -1,10 +1,5 @@
-//
-import Form from "./components/Form.js";
-import Header from "./components/Header";
-import recipeDB from "./apis/recipeDB";
-import RecipeList from "./components/RecipeList";
-import AddRecipe from "./components/AddRecipe.js";
 import React, { Component } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import {
   Tabs,
   Tab,
@@ -13,7 +8,6 @@ import {
   TabPanels,
   Box,
   Button,
-  Flex,
 } from "@chakra-ui/react";
 import { Input, List, ListItem, Text, Stack, IconButton, useToast } from "@chakra-ui/react";
 import { MdDelete } from "react-icons/md"; // Importing an icon for remove button
@@ -23,20 +17,16 @@ import SearchByRecipe from "./components/SearchByRecipe.js";
 import Login from "./components/Login.js";
 import UserProfile from "./components/UserProfile.js";
 import LandingPage from "./components/LandingPage.js";
-import BookMarksRecipeList from "./components/BookMarksRecipeList"; // Import BookMarksRecipeList
+import BookMarksRecipeList from "./components/BookMarksRecipeList";
 import UserMealPlan from "./components/UserMealPlan.js";
 import ChatStream from "./components/chatbot.js";
 
-// Main component of the project
 class App extends Component {
-  // Constructor for the App Component
   constructor(props) {
     super(props);
 
-    // Initialize state variables for managing app state
     this.state = {
       cuisine: "",
-      //NoIngredients : 0,
       ingredients: new Set(),
       recipeList: [],
       recipeByNameList: [],
@@ -51,7 +41,7 @@ class App extends Component {
       groceryList: [],
       isChatOpen: false,
       userData: {
-        bookmarks: [], // List of user bookmarks
+        bookmarks: [],
       },
     };
   }
@@ -83,7 +73,6 @@ class App extends Component {
     });
   };
 
-  // Function to handle switching to meal plan view
   handleMealPlan = () => {
     this.setState({
       isProfileView: false,
@@ -91,7 +80,6 @@ class App extends Component {
     });
   };
 
-  // Function to reset profile and meal plan views
   handleProfileView = () => {
     this.setState({
       isProfileView: false,
@@ -99,85 +87,26 @@ class App extends Component {
     });
   };
 
-  // Function to handle user signup
-  handleSignup = async (userName, password) => {
-    try {
-      const response = await recipeDB.post("/recipes/signup", {
-        userName,
-        password,
-      });
-      console.log(response.data);
-      if (response.data.success) {
-        alert("Successfully Signed up!");
-        this.setState({
-          isLoggedIn: true,
-          userData: response.data.user, // Set user data from response
-        });
-        localStorage.setItem("userName", response.data.user.userName); // Store username in local storage
-        console.log(response.data.user);
-      } else {
-        alert("User already exists"); // Handle case where user already exists
-      }
-    } catch (err) {
-      console.log(err); // Log any errors during signup
-    }
-  };
-
-  // Function to handle user login
-  handleLogin = async (userName, password) => {
-    try {
-      const response = await recipeDB.get("/recipes/login", {
-        params: {
-          userName,
-          password,
-        },
-      });
-
-      if (response.data.success) {
-        this.setState({
-          isLoggedIn: true, // Set logged-in state
-          userData: response.data.user, // Set user data from response
-        });
-        localStorage.setItem("userName", response.data.user.userName); // Store username in local storage
-        alert("Successfully logged in!"); // Alert user of successful login
-      } else {
-        const errorMessage = response.data.message || "An error occurred"; // Get error message
-        console.log(errorMessage);
-        alert(errorMessage); // Display specific message based on response
-      }
-    } catch (err) {
-      console.log("An error occurred:", err);
-      alert(
-        "An error occurred while trying to log in. Please try again later."
-      ); // Handle errors during login
-    }
-  };
-
-  // Function to get user input from the Form component on submit action
   handleSubmit = async (formDict) => {
     this.setState({
-      isLoading: true, // Set loading state while fetching recipes
-    });
-    console.log(formDict);
-    this.setState({
-      ingredients: formDict["ingredient"], // Update ingredients in state
-      cuisine: formDict["cuisine"], // Update cuisine in state
-      email: formDict["email_id"], // Update email in state
-      flag: formDict["flag"], // Update flag in state
+      isLoading: true,
     });
 
-    const mail = formDict["email_id"];
-    const flag = formDict["flag"];
-    const items = Array.from(formDict["ingredient"]); // Convert Set to Array for API call
-    const cuis = formDict["cuisine"];
-    this.getRecipeDetails(items, cuis, mail, flag); // Fetch recipes based on user input
+    this.setState({
+      ingredients: formDict["ingredient"],
+      cuisine: formDict["cuisine"],
+      email: formDict["email_id"],
+      flag: formDict["flag"],
+    });
+
+    const items = Array.from(formDict["ingredient"]);
+    this.getRecipeDetails(items, formDict["cuisine"], formDict["email_id"], formDict["flag"]);
   };
 
-  // Function to search for recipes by name
   handleRecipesByName = (recipeName) => {
     this.setState({
-      isLoading: true, // Set loading state while fetching recipes
-      searchName: recipeName, // Update search name in state
+      isLoading: true,
+      searchName: recipeName,
     });
     recipeDB
       .get("/recipes/getRecipeByName", {
@@ -186,15 +115,13 @@ class App extends Component {
         },
       })
       .then((res) => {
-        console.log(res.data);
         this.setState({
-          recipeByNameList: res.data.recipes, // Update recipes found by name in state
-          isLoading: false, // Set loading state to false
+          recipeByNameList: res.data.recipes,
+          isLoading: false,
         });
       });
   };
 
-  // Function to get recipes based on ingredients, cuisine, email, and flag
   getRecipeDetails = async (ingredient, cuis, mail, flag) => {
     try {
       const response = await recipeDB.get("/recipes", {
@@ -206,108 +133,17 @@ class App extends Component {
         },
       });
       this.setState({
-        recipeList: response.data.recipes, // Update recipe list with fetched data
-        isLoading: false, // Set loading state to false
+        recipeList: response.data.recipes,
+        isLoading: false,
       });
     } catch (err) {
-      console.log(err); // Log any errors during recipe fetching
+      console.log(err);
     }
   };
 
-  // Function to handle user logout
-  handleLogout = () => {
-    console.log("logged out");
-    this.setState({
-      isLoggedIn: false, // Reset logged-in state
-      userData: {}, // Clear user data
-    });
-  };
-
-  // Function to handle fetching bookmarks when navigating to profile view
-  handleBookMarks = async () => {
-    const userName = localStorage.getItem("userName"); // Get username from local storage
-    try {
-      const response = await recipeDB.get("/recipes/getBookmarks", {
-        params: { userName },
-      });
-      this.setState({
-        isProfileView: true, // Set profile view to true
-        userData: {
-          ...this.state.userData,
-          bookmarks: response.data.recipes, // Set fetched bookmarks to state
-        },
-      });
-    } catch (err) {
-      console.error("Error fetching bookmarks", err); // Log errors fetching bookmarks
-    }
-  };
-
-  // Function to remove a bookmark
-  handleRemoveBookmark = async (recipeId) => {
-    const userName = localStorage.getItem("userName"); // Get username from local storage
-
-    try {
-      const response = await recipeDB.post("/recipes/removeBookmark", {
-        userName,
-        recipeId,
-      });
-
-      if (response.data.success) {
-        this.setState((prevState) => ({
-          userData: {
-            ...prevState.userData,
-            bookmarks: prevState.userData.bookmarks.filter(
-              (recipe) => (recipe.id || recipe._id) !== recipeId // Remove based on recipeId
-            ),
-          },
-        }));
-      } else {
-        throw new Error(response.data.message || "Failed to remove bookmark");
-      }
-    } catch (error) {
-      console.error("Failed to remove bookmark:", error); // Log errors during bookmark removal
-    }
-  };
-
-  // Function to edit a recipe
-  editRecipe = async (recipeId, updatedData) => {
-    try {
-      const response = await recipeDB.put(
-        `/recipes/updateRecipe/${recipeId}`,
-        updatedData
-      );
-      if (response.status === 200) {
-        alert("Recipe updated successfully!"); // Alert user on successful update
-        // Refresh the recipes list or a specific recipe if needed
-        this.setState((prevState) => ({
-          recipeList: prevState.recipeList.map(
-            (recipe) =>
-              recipe._id === recipeId ? { ...recipe, ...updatedData } : recipe // Update recipe data in state
-          ),
-          recipeByNameList: prevState.recipeByNameList.map(
-            (recipe) =>
-              recipe._id === recipeId ? { ...recipe, ...updatedData } : recipe // Update recipe data in state
-          ),
-        }));
-      }
-    } catch (error) {
-      console.error("Failed to update recipe:", error); // Log errors during recipe update
-      alert("Error updating the recipe. Please try again."); // Alert user on error
-    }
-  };
-
-  // Function to reset profile and meal plan views
-  handleProfileView = () => {
-    this.setState({
-      isProfileView: false,
-      isMealPlanView: false,
-    });
-  };
-
-  // Render method to display the component
   render() {
     return (
-      <div>
+      <Router>
         <Nav
           handleLogout={this.handleLogout} // Logout function passed to Nav
           handleBookMarks={this.handleBookMarks} // Bookmarks function passed to Nav
@@ -476,4 +312,4 @@ class App extends Component {
   }
 }
 
-export default App; // Export the App component as the default export
+export default App;
