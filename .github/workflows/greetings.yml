@@ -14,3 +14,4 @@ jobs:
         repo-token: ${{ secrets.GIT_TOKEN }}
         issue-message: 'Welcome! Congratulations on being assigned your first issue! Have fun!'
         pr-message: 'Thank you for your pull request! Have fun!'
+    continue-on-error: true 
