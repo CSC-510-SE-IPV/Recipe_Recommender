@@ -1,38 +1,3 @@
-/**
- * RecipeList Component
- *
- * Displays a list of recipes as individual RecipeCard components in a grid layout.
- * Each recipe can be clicked to open a modal displaying detailed information,
- * where users can view or edit the recipe information and save changes.
- * Users can also rate the recipe or access a YouTube search link for cooking videos.
- *
- * Props:
- * @param {Array} recipes - An array of recipe objects to be displayed.
- * @param {Function} refresh - Callback function to refresh the recipes list, used after updates.
- * @param {string} searchName - The search term or filter used when fetching recipes.
- *
- * State:
- * @property {boolean} isOpen - Controls the visibility of the recipe detail modal.
- * @property {object} currentRecipe - Stores the currently selected recipe's details.
- * @property {boolean} isChange - Tracks if there are unsaved changes to prompt refreshing.
- * @property {boolean} isEditing - Toggles between view and edit modes for recipe details.
- *
- * Functions:
- * handleViewRecipe - Opens the modal with details of the selected recipe.
- * handleEditToggle - Toggles between edit and view modes in the modal.
- * handleInputChange - Updates the currentRecipe state with edited field values.
- * handleSaveEdit - Saves edited recipe details to the database and triggers refresh.
- * onClose - Closes the modal and optionally refreshes the recipe list if changes were made.
- *
- * UI Elements:
- * - Displays a grid of RecipeCard components for each recipe in the 'recipes' array.
- * - Modal contains editable fields for recipe details (name, cooking time, diet type, cuisine, ingredients, instructions).
- * - Includes a button to watch related recipes on YouTube, rating display, and an edit/save button.
- *
- * Example Usage:
- * <RecipeList recipes={recipes} refresh={fetchRecipes} searchName={searchTerm} />
- */
-
 import React, { useState, useEffect } from "react";
 import {
   Avatar,
@@ -50,6 +15,7 @@ import {
   Button,
   Input,
   Textarea,
+  useToast, // Import useToast
 } from "@chakra-ui/react";
 import RecipeCard from "./RecipeCard";
 import Rating from "./Rating";
@@ -62,6 +28,8 @@ const RecipeList = ({ refresh, searchName }) => {
   const [currentRecipe, setCurrentRecipe] = useState({});
   const [isChange, setIsChange] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  const toast = useToast(); // Initialize useToast
 
   useEffect(() => {
     fetchRecipes();
@@ -117,6 +85,30 @@ const RecipeList = ({ refresh, searchName }) => {
       .catch((err) => {
         console.error("Error saving recipe:", err);
         alert("Failed to update recipe. Please try again.");
+      });
+  };
+
+  const handleShareRecipe = () => {
+    navigator.clipboard
+      .writeText(`${window.location.origin}/recipe/${currentRecipe._id}`)
+      .then(() => {
+        toast({
+          title: "Link copied to clipboard.",
+          description: "You can share this link with others.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to copy link:", err);
+        toast({
+          title: "Failed to copy link.",
+          description: "Please try again.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
       });
   };
 
@@ -279,33 +271,29 @@ const RecipeList = ({ refresh, searchName }) => {
             </Flex>
           </ModalBody>
           <ModalFooter>
-          <RateRecipe recipe={currentRecipe} setChange={setIsChange} />
-  {isEditing ? (
-    <>
-      <Button colorScheme="teal" mr={3} onClick={handleSaveEdit}>
-        Save
-      </Button>
-      <Button onClick={handleEditToggle}>Cancel</Button>
-    </>
-  ) : (
-    <Button colorScheme="yellow" mr={3} onClick={handleEditToggle}>
-      Edit Recipe
-    </Button>
-  )}
-  <Button
-    colorScheme="blue"
-    mr={3}
-    onClick={() =>
-      navigator.clipboard.writeText(
-        `${window.location.origin}/recipe/${currentRecipe._id}`
-      )
-    }
-  >
-    Share Recipe
-  </Button>
-  <Button colorScheme="teal" mr={3} onClick={onClose}>
-    Close
-  </Button>
+            <RateRecipe recipe={currentRecipe} setChange={setIsChange} />
+            {isEditing ? (
+              <>
+                <Button colorScheme="teal" mr={3} onClick={handleSaveEdit}>
+                  Save
+                </Button>
+                <Button onClick={handleEditToggle}>Cancel</Button>
+              </>
+            ) : (
+              <Button colorScheme="yellow" mr={3} onClick={handleEditToggle}>
+                Edit Recipe
+              </Button>
+            )}
+            <Button
+              colorScheme="blue"
+              mr={3}
+              onClick={handleShareRecipe} // Use the new share handler
+            >
+              Share Recipe
+            </Button>
+            <Button colorScheme="teal" mr={3} onClick={onClose}>
+              Close
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
