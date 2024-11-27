@@ -43,7 +43,7 @@ We've added <b> numerous entertaining new features and fixes to enhance user-fri
 ## Feature additions: Enhancements, Upgrades and BugFixes:
 
 ## Watch how our application works in detail: 
-### Click here to watch the walkthrough - [Video](https://drive.google.com/file/d/1DOolD7SlqlNhsB5FMVuKGv54InO61Hqt/view?usp=sharing) <br>
+### Click here to watch the walkthrough - [Video](https://youtu.be/OkL8gcvtHJ8) <br>
 
 Presenting our latest additions: Here's a comprehensive list of all our new features, enhancements, and upgrades! <br>
 
