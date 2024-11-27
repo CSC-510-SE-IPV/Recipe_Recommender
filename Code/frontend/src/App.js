@@ -14,7 +14,6 @@ import {
   Text,
   Flex,
   IconButton,
-  useToast,
 } from "@chakra-ui/react";
 import { MdDelete } from "react-icons/md";
 import recipeDB from "./apis/recipeDB";
@@ -30,7 +29,7 @@ import ChatStream from "./components/chatbot.js";
 import RecipeList from "./components/RecipeList.js";
 import AddRecipe from "./components/AddRecipe.js";
 import RecipeDetails from "./components/RecipeDetails.js";
-import Form from "./components/Form.js"; // Import Form
+import Form from "./components/Form.js";
 
 class App extends Component {
   constructor(props) {
@@ -48,9 +47,9 @@ class App extends Component {
       isLoggedIn: false,
       isProfileView: false,
       isMealPlanView: false,
-      newGroceryItem: "",
-      groceryList: [],
       isChatOpen: false,
+      groceryList: [],
+      newGroceryItem: "",
       userData: {
         bookmarks: [],
       },
@@ -80,11 +79,22 @@ class App extends Component {
     }));
   };
 
-  handleBookMarks = () => {
-    this.setState({
-      isProfileView: true,
-      isMealPlanView: false,
-    });
+  handleBookMarks = async () => {
+    const userName = localStorage.getItem("userName");
+    try {
+      const response = await recipeDB.get("/recipes/getBookmarks", {
+        params: { userName },
+      });
+      this.setState({
+        isProfileView: true,
+        userData: {
+          ...this.state.userData,
+          bookmarks: response.data.recipes,
+        },
+      });
+    } catch (err) {
+      console.error("Error fetching bookmarks:", err);
+    }
   };
 
   handleMealPlan = () => {
@@ -101,37 +111,69 @@ class App extends Component {
     });
   };
 
-  handleSubmit = async (formDict) => {
-    this.setState({
-      isLoading: true,
-    });
+  handleSignup = async (userName, password) => {
+    try {
+      const response = await recipeDB.post("/recipes/signup", {
+        userName,
+        password,
+      });
+      if (response.data.success) {
+        alert("Successfully Signed up!");
+        this.setState({
+          isLoggedIn: true,
+          userData: response.data.user,
+        });
+        localStorage.setItem("userName", response.data.user.userName);
+      } else {
+        alert("User already exists");
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
+  handleLogin = async (userName, password) => {
+    try {
+      const response = await recipeDB.get("/recipes/login", {
+        params: {
+          userName,
+          password,
+        },
+      });
+
+      if (response.data.success) {
+        this.setState({
+          isLoggedIn: true,
+          userData: response.data.user,
+        });
+        localStorage.setItem("userName", response.data.user.userName);
+        alert("Successfully logged in!");
+      } else {
+        alert(response.data.message || "An error occurred");
+      }
+    } catch (err) {
+      console.log("An error occurred:", err);
+      alert("Login failed. Please try again.");
+    }
+  };
+
+  handleSubmit = async (formDict) => {
+    this.setState({ isLoading: true });
     this.setState({
       ingredients: formDict["ingredient"],
       cuisine: formDict["cuisine"],
       email: formDict["email_id"],
       flag: formDict["flag"],
     });
-
     const items = Array.from(formDict["ingredient"]);
-    this.getRecipeDetails(
-      items,
-      formDict["cuisine"],
-      formDict["email_id"],
-      formDict["flag"]
-    );
+    this.getRecipeDetails(items, formDict["cuisine"], formDict["email_id"], formDict["flag"]);
   };
 
   handleRecipesByName = (recipeName) => {
-    this.setState({
-      isLoading: true,
-      searchName: recipeName,
-    });
+    this.setState({ isLoading: true, searchName: recipeName });
     recipeDB
       .get("/recipes/getRecipeByName", {
-        params: {
-          recipeName: recipeName,
-        },
+        params: { recipeName },
       })
       .then((res) => {
         this.setState({
@@ -160,31 +202,49 @@ class App extends Component {
     }
   };
 
-  render() {
-    const { toastInstance } = this.props; // Access toast instance from props
+  editRecipe = async (recipeId, updatedData) => {
+    try {
+      const response = await recipeDB.put(
+        `/recipes/updateRecipe/${recipeId}`,
+        updatedData
+      );
+      if (response.status === 200) {
+        alert("Recipe updated successfully!");
+        this.setState((prevState) => ({
+          recipeList: prevState.recipeList.map((recipe) =>
+            recipe._id === recipeId ? { ...recipe, ...updatedData } : recipe
+          ),
+          recipeByNameList: prevState.recipeByNameList.map((recipe) =>
+            recipe._id === recipeId ? { ...recipe, ...updatedData } : recipe
+          ),
+        }));
+      }
+    } catch (error) {
+      console.error("Failed to update recipe:", error);
+      alert("Error updating the recipe. Please try again.");
+    }
+  };
 
+  render() {
     return (
       <Router>
         <Nav
-          handleLogout={this.handleLogout}
+          handleLogout={() => this.setState({ isLoggedIn: false, userData: {} })}
           handleBookMarks={this.handleBookMarks}
           handleMealPlan={this.handleMealPlan}
           user={this.state.isLoggedIn ? this.state.userData : null}
-          onLoginClick={() => this.setState({ isLoggedIn: false })}
         />
         <Routes>
           <Route
             path="/recipe/:id"
+            element={<RecipeDetails />}
+          />
+          <Route
+            path="/login"
             element={
-              <RecipeDetails
-                showToast={(message) => {
-                  toastInstance({
-                    title: message,
-                    status: "success",
-                    duration: 2000,
-                    isClosable: true,
-                  });
-                }}
+              <Login
+                handleSignup={this.handleSignup}
+                handleLogin={this.handleLogin}
               />
             }
           />
@@ -208,11 +268,10 @@ class App extends Component {
                   />
                 ) : (
                   <Tabs variant="soft-rounded" colorScheme="green">
-                    <TabList ml={10}>
+                    <TabList>
                       <Tab>Search Recipe</Tab>
                       <Tab>Add Recipe</Tab>
                       <Tab>Search Recipe By Name</Tab>
-                      <Tab>Recipe Bot</Tab>
                       <Tab>Grocery List</Tab>
                     </TabList>
                     <TabPanels>
@@ -224,36 +283,118 @@ class App extends Component {
                           ) : (
                             <RecipeList
                               recipes={this.state.recipeList}
-                              showToast={(message) => {
-                                toastInstance({
-                                  title: message,
-                                  status: "success",
-                                  duration: 2000,
-                                  isClosable: true,
-                                });
-                              }}
+                              editRecipe={this.editRecipe}
                             />
                           )}
                         </Box>
                       </TabPanel>
-                      {/* Other Panels */}
+                      <TabPanel>
+                        <AddRecipe />
+                      </TabPanel>
+                      <TabPanel>
+                        <SearchByRecipe
+                          sendRecipeData={this.handleRecipesByName}
+                        />
+                        {this.state.isLoading ? (
+                          <RecipeLoading />
+                        ) : (
+                          <RecipeList
+                            recipes={this.state.recipeByNameList}
+                            refresh={this.handleRecipesByName}
+                            searchName={this.state.searchName}
+                          />
+                        )}
+                      </TabPanel>
+                      <TabPanel>
+                    <Button
+                      onClick={this.handleToggleChat}
+                      colorScheme={this.state.isChatOpen ? "blue" : "green"} // Change color based on state
+                      variant='solid'
+                      size='lg' // Larger button
+                      borderRadius='md' // Rounded corners
+                      boxShadow='md' // Add a subtle shadow for depth
+                      _hover={{
+                        bg: this.state.isChatOpen ? "blue.600" : "green.600", // Darker shade on hover
+                        transform: "scale(1.05)", // Slightly enlarge on hover
+                      }}
+                      _active={{
+                        bg: this.state.isChatOpen ? "blue.700" : "green.700", // Darker shade when active
+                        transform: "scale(0.95)", // Slightly shrink when clicked
+                      }}
+                    >
+                      {this.state.isChatOpen
+                        ? "Close existing chat window"
+                        : "Start a new chat"}
+                    </Button>
+                    {this.state.isChatOpen && <ChatStream />}
+                  </TabPanel>
+                      <TabPanel>
+                  <Box p={8} bg="gray.50" borderRadius="xl" boxShadow="lg" maxWidth="500px" mx="auto">
+        <Text fontSize="3xl" fontWeight="bold" mb={6} textAlign="center" color="teal.600">
+          Grocery List
+        </Text>
+
+        {/* Input field to add new items */}
+        <Flex direction="column" mb={6}>
+          <Input
+            value={this.state.newGroceryItem}
+            onChange={(e) => this.setState({ newGroceryItem: e.target.value })}
+            placeholder="Add an item to the grocery list"
+            size="lg"
+            borderColor="teal.300"
+            focusBorderColor="teal.500"
+            mb={4}
+          />
+          <Button
+            colorScheme="teal"
+            size="lg"
+            onClick={() => this.handleAddToGroceryList(this.state.newGroceryItem)}
+            isDisabled={!this.state.newGroceryItem.trim()}
+          >
+            Add to List
+          </Button>
+        </Flex>
+
+        {/* Grocery list */}
+        <List spacing={4}>
+          {this.state.groceryList.map((item, index) => (
+            <ListItem
+              key={index}
+              p={4}
+              borderWidth="1px"
+              borderRadius="md"
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              bg="white"
+              boxShadow="sm"
+              _hover={{ bg: "teal.50", cursor: "pointer" }}
+            >
+              <Text fontSize="lg" fontWeight="semibold" color="gray.700">
+                {item}
+              </Text>
+              <IconButton
+                aria-label="Remove from grocery list"
+                icon={<MdDelete />}
+                colorScheme="red"
+                size="sm"
+                onClick={() => this.handleRemoveFromGroceryList(item)}
+                variant="outline"
+                _hover={{ bg: "red.100" }}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+                  </TabPanel>
                     </TabPanels>
                   </Tabs>
                 )
               ) : (
                 <LandingPage
-                  onGetStarted={() => this.setState({ showLogin: true })}
+                  onGetStarted={() => this.setState({ isLoggedIn: true })}
                 />
               )
-            }
-          />
-          <Route
-            path="/login"
-            element={
-              <Login
-                handleSignup={this.handleSignup}
-                handleLogin={this.handleLogin}
-              />
             }
           />
         </Routes>
@@ -262,8 +403,4 @@ class App extends Component {
   }
 }
 
-export default function AppWrapper() {
-  const toast = useToast();
-
-  return <App toastInstance={toast} />;
-}
+export default App;
