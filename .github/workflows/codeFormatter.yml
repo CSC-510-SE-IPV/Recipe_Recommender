@@ -4,10 +4,13 @@ on:
     branches:
       - master
       - group31-fall24
+      - group5-fall24
   push:
     branches:
       - master
       - group31-fall24
+      - group5-fall24
+
 jobs:
   test:
     name: Check the source code
