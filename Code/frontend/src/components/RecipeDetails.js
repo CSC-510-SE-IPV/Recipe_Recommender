@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "../apis/recipeDB";
-import { Box, Text, Spinner, Avatar } from "@chakra-ui/react";
+import { Box, Text, Spinner, Avatar, Button, useToast } from "@chakra-ui/react";
 
 const RecipeDetails = () => {
   const { id } = useParams(); // Get recipe ID from the URL
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
+  const toast = useToast(); // Initialize useToast
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -22,6 +23,20 @@ const RecipeDetails = () => {
 
     fetchRecipe();
   }, [id]);
+
+  const handleShareClick = () => {
+    const recipeLink = `${window.location.origin}/recipe/${id}`;
+    navigator.clipboard.writeText(recipeLink).then(() => {
+      // Show a toast message
+      toast({
+        title: "Link copied to clipboard.",
+        description: "You can share this link with others.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    });
+  };
 
   if (loading) {
     return <Spinner size="xl" />;
@@ -48,6 +63,15 @@ const RecipeDetails = () => {
         Instructions:
       </Text>
       <Text>{recipe.TranslatedInstructions}</Text>
+      
+      {/* Share Recipe Button */}
+      <Button
+        mt={5}
+        colorScheme="blue"
+        onClick={handleShareClick}
+      >
+        Share Recipe
+      </Button>
     </Box>
   );
 };
