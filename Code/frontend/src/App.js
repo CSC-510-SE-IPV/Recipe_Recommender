@@ -25,7 +25,7 @@ import UserProfile from "./components/UserProfile.js";
 import LandingPage from "./components/LandingPage.js";
 import BookMarksRecipeList from "./components/BookMarksRecipeList";
 import UserMealPlan from "./components/UserMealPlan.js";
-import ChatStream from "./components/chatbot.js"; // Import ChatStream
+import ChatStream from "./components/chatbot.js";
 import RecipeList from "./components/RecipeList.js";
 import AddRecipe from "./components/AddRecipe.js";
 import RecipeDetails from "./components/RecipeDetails.js";
@@ -47,12 +47,13 @@ class App extends Component {
       isLoggedIn: false,
       isProfileView: false,
       isMealPlanView: false,
-      isChatOpen: false, // State to track chatbot visibility
+      isChatOpen: false,
       groceryList: [],
       newGroceryItem: "",
       userData: {
         bookmarks: [],
       },
+      showLogin: false, // State for showing the login page
     };
   }
 
@@ -75,7 +76,7 @@ class App extends Component {
 
   handleToggleChat = () => {
     this.setState((prevState) => ({
-      isChatOpen: !prevState.isChatOpen, // Toggle chatbot visibility
+      isChatOpen: !prevState.isChatOpen,
     }));
   };
 
@@ -145,6 +146,7 @@ class App extends Component {
         this.setState({
           isLoggedIn: true,
           userData: response.data.user,
+          showLogin: false,
         });
         localStorage.setItem("userName", response.data.user.userName);
         alert("Successfully logged in!");
@@ -235,10 +237,7 @@ class App extends Component {
           user={this.state.isLoggedIn ? this.state.userData : null}
         />
         <Routes>
-          <Route
-            path="/recipe/:id"
-            element={<RecipeDetails />}
-          />
+          <Route path="/recipe/:id" element={<RecipeDetails />} />
           <Route
             path="/login"
             element={
@@ -257,9 +256,7 @@ class App extends Component {
                     handleProfileView={this.handleProfileView}
                     user={this.state.userData}
                   >
-                    <BookMarksRecipeList
-                      recipes={this.state.userData.bookmarks}
-                    />
+                    <BookMarksRecipeList recipes={this.state.userData.bookmarks} />
                   </UserProfile>
                 ) : this.state.isMealPlanView ? (
                   <UserMealPlan
@@ -293,9 +290,7 @@ class App extends Component {
                         <AddRecipe />
                       </TabPanel>
                       <TabPanel>
-                        <SearchByRecipe
-                          sendRecipeData={this.handleRecipesByName}
-                        />
+                        <SearchByRecipe sendRecipeData={this.handleRecipesByName} />
                         {this.state.isLoading ? (
                           <RecipeLoading />
                         ) : (
@@ -416,9 +411,14 @@ class App extends Component {
                     </TabPanels>
                   </Tabs>
                 )
+              ) : this.state.showLogin ? (
+                <Login
+                  handleSignup={this.handleSignup}
+                  handleLogin={this.handleLogin}
+                />
               ) : (
                 <LandingPage
-                  onGetStarted={() => this.setState({ isLoggedIn: true })}
+                  onGetStarted={() => this.setState({ showLogin: true })}
                 />
               )
             }
