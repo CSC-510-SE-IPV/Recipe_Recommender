@@ -54,6 +54,10 @@ Presenting our latest additions: Here's a comprehensive list of all our new feat
 5. System security upgrade: We observed some passwords present in the codebase, which is a major security threat. We have ensured to removed this and move it to the DB. Additionally, we have implemented secure logins and logouts ensuring the prevention of duplicate entries and safeguards credentials, fortifying the overall security of the system.
 6. The requirements.txt file has been updated to ensure forward compatibility by specifying package versions greater than or equal to the ones explicitly mentioned. This modification allows for the installation of packages with versions that meet or exceed the specified ones, thus accommodating future updates and maintaining compatibility with evolving dependencies.
 7. We have enhanced the project by implementing robust login bug fixes, comprehensive form validations, and an expanded suite of test cases.
+8.  Edit an Existing Recipe: Made a mistake or want to spice things up? Edit your recipes effortlessly and keep them fresh and fabulous!
+9.  Share Recipes By Link: Share the joy of cooking! Send recipes to friends with a simple link or a quick scan of a QR code. Perfect for spreading deliciousness far and wide!
+10. Grocery List: Say goodbye to forgotten ingredients! Add recipe items directly to your grocery list and shop with ease. Cooking just got more organized!
+11. Security Enhancements: Cook with peace of mind! Enjoy secure logins, encrypted passwords, and advanced protection with JSON Web Tokens. Your data, safer than ever!
 
 ## Documentation and Project Flow:
 
@@ -277,13 +281,13 @@ Please see our [CONTRIBUTING.md](https://github.com/SE-Fall24-RZA/Recipe_Recomme
 
 ## FUTURE SCOPE
 
-1. Edit an Existing Recipe : Fully implement the functionality for editing a pre-existing recipe.  Whoever created the recipe should be able to make changes to any of the recipe’s details
-
-2. Share Recipe By Link : Create a sharing method allowing a user to send a recipe to someone else via a link or QR Code. Upon opening this link, the recipient should be able to see all details about the recipe.
-
-3. Grocery List : Users should be able to add ingredients from recipes to a separate grocery list tab. 
-
-4. Security Enhancements : Incorporate encryption and hashing into the login functionality.  Passwords should be stored as salted and hashed, not as raw text.  Implement JSON Web Tokens to securely login users and keep track of who is logged in.  This will ensure the safety of any sensitive user data
+1. 🌍 Global Recipe Sharing: Introduce support for multi-language recipes, making it easier to explore cuisines from around the world.
+2. 📱 Mobile App Development: Launch a dedicated mobile app for on-the-go recipe discovery and meal planning.
+3. 📊 Advanced Analytics: Provide personalized cooking insights like trending recipes, nutrition analysis, and meal prep tips.
+4. 🍴 AI-Powered Recommendations: Use machine learning to suggest recipes based on user preferences, ratings, and past activity.
+5. 🌟 Collaborative Cooking: Add a social feature to collaborate on meal planning or share recipe tweaks with friends in real time.
+6. 📚 Cooking Tutorials: Add step-by-step video guides and tutorials for recipes to make cooking more accessible for beginners.
+7. 📊 Nutritional Insights: Add detailed nutrition breakdowns for recipes, helping users make informed dietary choices.
 
 ## Team Members
 Ishani Rajput - irajput@ncsu.edu <br>
