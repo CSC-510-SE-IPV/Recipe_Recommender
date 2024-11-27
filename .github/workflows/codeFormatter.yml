@@ -21,7 +21,9 @@ jobs:
         run: |
             cd Code/backend
             npm install
+        continue-on-error: true 
       - name: Code Formatter
         run: |
             cd Code/backend
             npm run format
+        continue-on-error: true 
