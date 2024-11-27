@@ -25,7 +25,7 @@ import UserProfile from "./components/UserProfile.js";
 import LandingPage from "./components/LandingPage.js";
 import BookMarksRecipeList from "./components/BookMarksRecipeList";
 import UserMealPlan from "./components/UserMealPlan.js";
-import ChatStream from "./components/chatbot.js";
+import ChatStream from "./components/chatbot.js"; // Import ChatStream
 import RecipeList from "./components/RecipeList.js";
 import AddRecipe from "./components/AddRecipe.js";
 import RecipeDetails from "./components/RecipeDetails.js";
@@ -47,7 +47,7 @@ class App extends Component {
       isLoggedIn: false,
       isProfileView: false,
       isMealPlanView: false,
-      isChatOpen: false,
+      isChatOpen: false, // State to track chatbot visibility
       groceryList: [],
       newGroceryItem: "",
       userData: {
@@ -75,7 +75,7 @@ class App extends Component {
 
   handleToggleChat = () => {
     this.setState((prevState) => ({
-      isChatOpen: !prevState.isChatOpen,
+      isChatOpen: !prevState.isChatOpen, // Toggle chatbot visibility
     }));
   };
 
@@ -272,6 +272,7 @@ class App extends Component {
                       <Tab>Search Recipe</Tab>
                       <Tab>Add Recipe</Tab>
                       <Tab>Search Recipe By Name</Tab>
+                      <Tab>Recipe Bot</Tab>
                       <Tab>Grocery List</Tab>
                     </TabList>
                     <TabPanels>
@@ -306,87 +307,112 @@ class App extends Component {
                         )}
                       </TabPanel>
                       <TabPanel>
-                    <Button
-                      onClick={this.handleToggleChat}
-                      colorScheme={this.state.isChatOpen ? "blue" : "green"} // Change color based on state
-                      variant='solid'
-                      size='lg' // Larger button
-                      borderRadius='md' // Rounded corners
-                      boxShadow='md' // Add a subtle shadow for depth
-                      _hover={{
-                        bg: this.state.isChatOpen ? "blue.600" : "green.600", // Darker shade on hover
-                        transform: "scale(1.05)", // Slightly enlarge on hover
-                      }}
-                      _active={{
-                        bg: this.state.isChatOpen ? "blue.700" : "green.700", // Darker shade when active
-                        transform: "scale(0.95)", // Slightly shrink when clicked
-                      }}
-                    >
-                      {this.state.isChatOpen
-                        ? "Close existing chat window"
-                        : "Start a new chat"}
-                    </Button>
-                    {this.state.isChatOpen && <ChatStream />}
-                  </TabPanel>
+                        <Button
+                          onClick={this.handleToggleChat}
+                          colorScheme={this.state.isChatOpen ? "blue" : "green"}
+                          variant="solid"
+                          size="lg"
+                          borderRadius="md"
+                          boxShadow="md"
+                          _hover={{
+                            bg: this.state.isChatOpen
+                              ? "blue.600"
+                              : "green.600",
+                            transform: "scale(1.05)",
+                          }}
+                          _active={{
+                            bg: this.state.isChatOpen
+                              ? "blue.700"
+                              : "green.700",
+                            transform: "scale(0.95)",
+                          }}
+                        >
+                          {this.state.isChatOpen
+                            ? "Close existing chat window"
+                            : "Start a new chat"}
+                        </Button>
+                        {this.state.isChatOpen && <ChatStream />}
+                      </TabPanel>
                       <TabPanel>
-                  <Box p={8} bg="gray.50" borderRadius="xl" boxShadow="lg" maxWidth="500px" mx="auto">
-        <Text fontSize="3xl" fontWeight="bold" mb={6} textAlign="center" color="teal.600">
-          Grocery List
-        </Text>
-
-        {/* Input field to add new items */}
-        <Flex direction="column" mb={6}>
-          <Input
-            value={this.state.newGroceryItem}
-            onChange={(e) => this.setState({ newGroceryItem: e.target.value })}
-            placeholder="Add an item to the grocery list"
-            size="lg"
-            borderColor="teal.300"
-            focusBorderColor="teal.500"
-            mb={4}
-          />
-          <Button
-            colorScheme="teal"
-            size="lg"
-            onClick={() => this.handleAddToGroceryList(this.state.newGroceryItem)}
-            isDisabled={!this.state.newGroceryItem.trim()}
-          >
-            Add to List
-          </Button>
-        </Flex>
-
-        {/* Grocery list */}
-        <List spacing={4}>
-          {this.state.groceryList.map((item, index) => (
-            <ListItem
-              key={index}
-              p={4}
-              borderWidth="1px"
-              borderRadius="md"
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              bg="white"
-              boxShadow="sm"
-              _hover={{ bg: "teal.50", cursor: "pointer" }}
-            >
-              <Text fontSize="lg" fontWeight="semibold" color="gray.700">
-                {item}
-              </Text>
-              <IconButton
-                aria-label="Remove from grocery list"
-                icon={<MdDelete />}
-                colorScheme="red"
-                size="sm"
-                onClick={() => this.handleRemoveFromGroceryList(item)}
-                variant="outline"
-                _hover={{ bg: "red.100" }}
-              />
-            </ListItem>
-          ))}
-        </List>
-      </Box>
-                  </TabPanel>
+                        <Box
+                          p={8}
+                          bg="gray.50"
+                          borderRadius="xl"
+                          boxShadow="lg"
+                          maxWidth="500px"
+                          mx="auto"
+                        >
+                          <Text
+                            fontSize="3xl"
+                            fontWeight="bold"
+                            mb={6}
+                            textAlign="center"
+                            color="teal.600"
+                          >
+                            Grocery List
+                          </Text>
+                          <Flex direction="column" mb={6}>
+                            <Input
+                              value={this.state.newGroceryItem}
+                              onChange={(e) =>
+                                this.setState({ newGroceryItem: e.target.value })
+                              }
+                              placeholder="Add an item to the grocery list"
+                              size="lg"
+                              borderColor="teal.300"
+                              focusBorderColor="teal.500"
+                              mb={4}
+                            />
+                            <Button
+                              colorScheme="teal"
+                              size="lg"
+                              onClick={() =>
+                                this.handleAddToGroceryList(
+                                  this.state.newGroceryItem
+                                )
+                              }
+                              isDisabled={!this.state.newGroceryItem.trim()}
+                            >
+                              Add to List
+                            </Button>
+                          </Flex>
+                          <List spacing={4}>
+                            {this.state.groceryList.map((item, index) => (
+                              <ListItem
+                                key={index}
+                                p={4}
+                                borderWidth="1px"
+                                borderRadius="md"
+                                display="flex"
+                                justifyContent="space-between"
+                                alignItems="center"
+                                bg="white"
+                                boxShadow="sm"
+                                _hover={{ bg: "teal.50", cursor: "pointer" }}
+                              >
+                                <Text
+                                  fontSize="lg"
+                                  fontWeight="semibold"
+                                  color="gray.700"
+                                >
+                                  {item}
+                                </Text>
+                                <IconButton
+                                  aria-label="Remove from grocery list"
+                                  icon={<MdDelete />}
+                                  colorScheme="red"
+                                  size="sm"
+                                  onClick={() =>
+                                    this.handleRemoveFromGroceryList(item)
+                                  }
+                                  variant="outline"
+                                  _hover={{ bg: "red.100" }}
+                                />
+                              </ListItem>
+                            ))}
+                          </List>
+                        </Box>
+                      </TabPanel>
                     </TabPanels>
                   </Tabs>
                 )
